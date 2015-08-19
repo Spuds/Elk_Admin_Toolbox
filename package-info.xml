@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE package-info SYSTEM "http://www.elkarte.net/site/package-info">
+<package-info xmlns="http://www.elkarte.net/site/package-info" xmlns:elk="http://www.elkarte.net/">
+	<id>spuds:AdminToolboxMod</id>
+	<name>Admin Toolbox</name>
+	<version>1.0</version>
+	<type>modification</type>
+
+	<install for="1.0 - 1.0.99">
+		<readme type="file" parsebbc="true">install-readme.txt</readme>
+		<require-file name="AdminToolbox.controller.php" destination="ADMINDIR">Our Admin Toolbox Functions</require-file>
+		<require-file name="AdminToolboxIntegration.php" destination="SOURCEDIR">Our Admin Toolbox Hooks</require-file>
+		<require-file name="toolbox.js" destination="THEMEDIR/scripts">Javascript for member selection</require-file>
+		<require-file name="AdminToolbox.template.php" destination="THEMEDIR">The templates</require-file>
+		<require-file name="AdminToolbox.english.php" destination="LANGUAGEDIR/english">Language file</require-file>
+		<require-file name="toolbox.gif" destination="IMAGESDIR/admin">The icon</require-file>
+		<hook hook="integrate_admin_areas" function="iaa_admintoolbox" file="SOURCEDIR/AdminToolboxIntegration.php" />
+		<redirect url="index.php?action=admin;area=toolbox" timeout="5000">redirect.txt</redirect>
+	</install>
+
+	<uninstall for="1.0 - 1.0.99">
+		<hook reverse="true" hook="integrate_admin_areas" function="iaa_admintoolbox" file="SOURCEDIR/AdminToolboxIntegration.php" />
+		<remove-file name="ADMINDIR/AdminToolbox.controller.php" />
+		<remove-file name="SOURCEDIR/AdminToolboxIntegration.php" />
+		<remove-file name="THEMEDIR/scripts/toolbox.js" />
+		<remove-file name="THEMEDIR/AdminToolbox.template.php" />
+		<remove-file name="LANGUAGEDIR/english/AdminToolbox.english.php" />
+	</uninstall>
+
+</package-info>
