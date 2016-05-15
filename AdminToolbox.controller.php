@@ -12,7 +12,9 @@
  */
 
 if (!defined('ELK'))
+{
 	die('No access...');
+}
 
 /**
  * Toolbox controller.
@@ -84,16 +86,20 @@ class Toolbox_Controller extends Action_Controller
 
 		// If we have any messages to show
 		if (isset($_GET['done']) && isset($txt['toolbox_' . $_GET['done']]))
+		{
 			$context['maintenance_finished'] = $txt['toolbox_' . $_GET['done']];
+		}
 		elseif (isset($_GET['error']) && isset($txt['toolbox_' . $_GET['error']]))
+		{
 			$context['maintenance_error'] = $txt['toolbox_' . $_GET['error']];
+		}
 
 		// A touch of JS
 		loadJavascriptFile(array('suggest.js', 'toolbox.js'), array('defer' => true));
 		addInlineJavascript('	// Auto suggest script
 		var oToolBoxTo = new elk_ToolBox({
 			sSelf: \'oToolBoxTo\',
-			sSessionId: \'' .  $context['session_id'] . '\',
+			sSessionId: \'' . $context['session_id'] . '\',
 			sSessionVar: \'' . $context['session_var'] . '\',
 			sTextDeleteItem: \'' . $txt['autosuggest_delete_item'] . '\',
 			sTextViewItem: \'' . $txt['autosuggest_view_item'] . '\',
@@ -166,7 +172,9 @@ class Toolbox_Controller extends Action_Controller
 		{
 			// Mark the boards as read for this member
 			foreach ($boards as $board)
+			{
 				$inserts[] = array($modSettings['maxMsgID'], $member, $board);
+			}
 		}
 
 		// Do the updates
@@ -184,14 +192,18 @@ class Toolbox_Controller extends Action_Controller
 
 			// Really would like to keep running mr. apache
 			if (function_exists('apache_reset_timeout'))
+			{
 				apache_reset_timeout();
+			}
 
 			return;
 		}
 
 		// Optimize the one table that should have gone down in size, assuming its not innodb of course
 		ignore_user_abort(true);
-		$real_prefix = preg_match('~^(`?)(.+?)\\1\\.(.*?)$~', $db_prefix, $match) === 1 ? $match[3] : $db_prefix;
+		$real_prefix = preg_match('~^(`?)(.+?)\\1\\.(.*?)$~', $db_prefix, $match) === 1
+			? $match[3]
+			: $db_prefix;
 		$db->db_optimize_table($real_prefix . 'log_topics');
 
 		// All done
@@ -210,7 +222,9 @@ class Toolbox_Controller extends Action_Controller
 
 		// Not getting hacky with it are ya?
 		if ($this->db_title !== 'MySQL')
+		{
 			redirectexit('action=admin;area=toolbox;');
+		}
 
 		// The oldest message date
 		$message_start_date = atb_oldest_message();
@@ -247,15 +261,21 @@ class Toolbox_Controller extends Action_Controller
 			{
 				$stats_data_hits = array_slice($stats_data_hits, 1, count($stats_data_hits) - 2);
 				if ($missing_months >= 12)
+				{
 					array_unshift($stats_data_hits, 1);
+				}
 
 				$stats_data_most_on = array_slice($stats_data_most_on, 1, count($stats_data_most_on) - 2);
 				if ($missing_months >= 12)
+				{
 					array_unshift($stats_data_most_on, 1);
+				}
 
 				$stats_data_delta = array_slice($stats_data_delta, 1, count($stats_data_delta) - 2);
 				if ($missing_months >= 12)
+				{
 					array_unshift($stats_data_delta, 0);
+				}
 			}
 
 			$stats['most_on_coeff'] = ($this->_linear_regression($stats_data_delta, $stats_data_most_on, true));
@@ -268,17 +288,21 @@ class Toolbox_Controller extends Action_Controller
 
 		// Data rebuild Options, based on what we can do
 		if ($total_days_up == 1)
+		{
 			$context['toolbox_rebuild_option'] = array(
 				array('id' => 1, 'value' => 'bypass', 'name' => $txt['toolbox_skip'], 'desc' => $txt['toolbox_skip_desc']),
 				array('id' => 2, 'value' => 'zero', 'name' => $txt['toolbox_zero'], 'desc' => $txt['toolbox_zero_desc']),
 			);
+		}
 		else
+		{
 			$context['toolbox_rebuild_option'] = array(
 				array('id' => 1, 'value' => 'bypass', 'name' => $txt['toolbox_skip'], 'desc' => $txt['toolbox_skip_desc']),
 				array('id' => 2, 'value' => 'zero', 'name' => $txt['toolbox_zero'], 'desc' => $txt['toolbox_zero_desc']),
 				array('id' => 3, 'value' => 'average', 'name' => $txt['toolbox_average'], 'desc' => $txt['toolbox_average_desc']),
 				array('id' => 4, 'value' => 'balanced', 'name' => $txt['toolbox_balanced'], 'desc' => $txt['toolbox_balanced_desc']),
 			);
+		}
 	}
 
 	/**
@@ -298,13 +322,17 @@ class Toolbox_Controller extends Action_Controller
 
 		// Arrays need to be the same size and have more than 1 point for the math to work
 		if ($n != count($y) || $n == 1)
+		{
 			return array('m' => 0, 'b' => 0);
+		}
 
 		// Convert Y data to logs only if doing an exponential fit
 		if ($power)
 		{
 			foreach ($y as $key => $value)
+			{
 				$y[$key] = log10($value);
+			}
 		}
 
 		// Calculate sums
@@ -323,9 +351,13 @@ class Toolbox_Controller extends Action_Controller
 		// Slope aka 'm'
 		$divisor = (($n * $xx_sum) - ($x_sum * $x_sum));
 		if ($divisor == 0)
+		{
 			$m = 0;
+		}
 		else
+		{
 			$m = (($n * $xy_sum) - ($x_sum * $y_sum)) / $divisor;
+		}
 
 		// Intercept aka 'b'
 		$b = ($y_sum - ($m * $x_sum)) / $n;
@@ -362,8 +394,10 @@ class Toolbox_Controller extends Action_Controller
 		checkSession('request');
 
 		// How did you get here, its implausible !
-		if ($db->title !== 'MySQL')
+		if (DB_TYPE !== 'MySQL')
+		{
 			redirectexit('action=admin;area=toolbox;');
+		}
 
 		// init this pass
 		$inserts = array();
@@ -381,7 +415,9 @@ class Toolbox_Controller extends Action_Controller
 			// no data from the post page, you get bounced
 			$stats = unserialize(stripslashes(htmlspecialchars_decode($_POST['stats_data'])));
 			if (empty($stats))
+			{
 				redirectexit('action=admin;area=toolbox');
+			}
 
 			// keep each pass at the 4 month level ...
 			$_SESSION['months_per_loop'] = 4;
@@ -472,7 +508,9 @@ class Toolbox_Controller extends Action_Controller
 					$inserts[$date_id]['messages'] += $row['posts'];
 				}
 				else
+				{
 					$inserts[$date_id] = array('topics' => (int) $row['topics'], 'messages' => (int) $row['posts'], 'date' => sprintf('\'%1$s\'', $date_id), 'registers' => 0);
+				}
 			}
 		}
 		$db->free_result($request);
@@ -500,9 +538,13 @@ class Toolbox_Controller extends Action_Controller
 				// keep those day boundarys our you will have a mess
 				$date_id = strftime('%Y-%m-%d', $row['date_registered'] - $modSettings['time_offset']);
 				if (isset($inserts[$date_id]))
+				{
 					$inserts[$date_id]['registers'] += $row['registers'];
+				}
 				else
+				{
 					$inserts[$date_id] = array('topics' => 0, 'messages' => 0, 'date' => sprintf('\'%1$s\'', $date_id), 'registers' => (int) $row['registers']);
+				}
 			}
 		}
 		$db->free_result($request);
@@ -532,8 +574,12 @@ class Toolbox_Controller extends Action_Controller
 						$x = round(($start_time - $_SESSION['original_date_int']) / 86400);
 						$hits = min(floor($_SESSION['stats']['hits_coeff']['b'] * pow($_SESSION['stats']['hits_coeff']['m'], $x)), floor($_SESSION['stats']['hits'] * $limiter));
 						$most = min(floor($_SESSION['stats']['most_on_coeff']['b'] * pow($_SESSION['stats']['most_on_coeff']['m'], $x)), floor($_SESSION['stats']['most_on'] * $limiter));
-						$most = (empty($most)) ? 1 : (int) $most;
-						$hits = (empty($hits)) ? 1 : (int) $hits;
+						$most = (empty($most))
+							? 1
+							: (int) $most;
+						$hits = (empty($hits))
+							? 1
+							: (int) $hits;
 						break;
 					case 'zero':
 					default:
@@ -552,7 +598,9 @@ class Toolbox_Controller extends Action_Controller
 		ksort($inserts);
 		$insertRows = array();
 		foreach ($inserts as $dataRow)
+		{
 			$insertRows[] = '(' . implode(',', $dataRow) . ')';
+		}
 
 		// We have data now to insert / update ....
 		if (!empty($insertRows))
@@ -578,7 +626,9 @@ class Toolbox_Controller extends Action_Controller
 			$context['continue_get_data'] = '?action=admin;area=toolbox;sa=stats;start_date=' . $_GET['start_date'] . ';' . $context['session_var'] . '=' . $context['session_id'];
 
 			if (function_exists('apache_reset_timeout'))
+			{
 				apache_reset_timeout();
+			}
 
 			return;
 		}
@@ -626,35 +676,48 @@ class Toolbox_Controller extends Action_Controller
 				if (strpos($key, 'dummy_') !== false)
 				{
 					if ($count == 0)
+					{
 						$merge_to = Util::htmltrim($value);
+					}
 					else
+					{
 						$merge_from = Util::htmltrim($value);
+					}
 					$count++;
 				}
 
 				if ($count > 1)
+				{
 					break;
+				}
 			}
 
 			// If not autosuggest populated, and we found the post field, use it
 			if (empty($autosuggest_merge_to))
+			{
 				$merge_to = ($merge_to != '') ? $merge_to : 0;
+			}
 			if (empty($autosuggest_merge_from))
+			{
 				$merge_from = ($merge_from != '') ? $merge_from : 0;
+			}
 
 			// Supplied numbers did they, then assume they are userid's
 			if (!empty($merge_from) && is_numeric($merge_from))
+			{
 				$autosuggest_merge_from = (int) $merge_from;
+			}
 			if (!empty($merge_to) && is_numeric($merge_to))
+			{
 				$autosuggest_merge_to = (int) $merge_to;
+			}
 
 			// Perhaps some text instead, then we search on the name to get the member id
 			if (empty($autosuggest_merge_from) || empty($autosuggest_merge_to))
 			{
 				$query = 'real_name = ';
 				$query .= (!empty($merge_to)) ? "'$merge_to'" : '';
-				$query .= (!empty($merge_from) && !empty($merge_to)) ? " OR real_name = '$merge_from'"
-					: (!empty($merge_from) ? "'$merge_from'" : '');
+				$query .= (!empty($merge_from) && !empty($merge_to)) ? " OR real_name = '$merge_from'" : (!empty($merge_from) ? "'$merge_from'" : '');
 				$query_limit = (!empty($merge_from) && !empty($merge_to)) ? 3 : 2;
 
 				// validate these are member names
@@ -664,24 +727,34 @@ class Toolbox_Controller extends Action_Controller
 
 		// Validate whatever we found, first you simply can't do this to a zero or blank
 		if (empty($autosuggest_merge_to) || empty($autosuggest_merge_from))
+		{
 			redirectexit('action=admin;area=toolbox;error=zeroid');
+		}
 
 		// Not a good idea with the admin account either
 		if (($autosuggest_merge_to == 1) || ($autosuggest_merge_from == 1))
+		{
 			redirectexit('action=admin;area=toolbox;error=adminid');
+		}
 
 		// And it cant be the same id
 		if ($autosuggest_merge_to == $autosuggest_merge_from)
+		{
 			redirectexit('action=admin;area=toolbox;error=sameid');
+		}
 
 		// And these members must exist
 		$check = loadMemberData(array($autosuggest_merge_to, $autosuggest_merge_from), false, 'minimal');
 		if (empty($check) || count($check) != 2)
+		{
 			redirectexit('action=admin;area=toolbox;error=badid');
+		}
 
 		// And you can't delete the ID you are currently using, moron
 		if (isset($_POST['deluser']) && ($autosuggest_merge_from == $user_info['id']))
+		{
 			redirectexit('action=admin;area=toolbox;error=baddelete');
+		}
 
 		// Data looks valid, so lets make them hit enter to continue ... we want to be sure about this !
 		$context['page_title'] = $txt['toolbox_mergeuser_check'];
@@ -715,8 +788,12 @@ class Toolbox_Controller extends Action_Controller
 
 		// Init our run
 		$name = '';
-		$steps = !isset($_SESSION['steps']) ? 9 : (int) $_SESSION['steps'];
-		$step = !isset($_GET['step']) ? 0 : (int) $_GET['step'];
+		$steps = !isset($_SESSION['steps'])
+			? 9
+			: (int) $_SESSION['steps'];
+		$step = !isset($_GET['step'])
+			? 0
+			: (int) $_GET['step'];
 
 		// Ask for some extra time, never hurts ;)
 		@set_time_limit(600);
@@ -749,39 +826,57 @@ class Toolbox_Controller extends Action_Controller
 
 		// Merge Topics
 		if ($step == 1)
+		{
 			atb_merge_topics($dstid, $srcid);
+		}
 
 		// Merge Posts
 		if ($step == 2)
+		{
 			atb_merge_posts($dstid, $srcid);
+		}
 
 		// Merge Attachments
 		if ($step == 3)
+		{
 			atb_merge_attachments($dstid, $srcid);
+		}
 
 		// Merge Private Messages
 		if ($step == 4)
+		{
 			atb_merge_pm($dstid, $srcid, $_SESSION['deluser']);
+		}
 
 		// Some misc things, like Calendar Events, Polls, other 'Lists'
 		if ($step == 5)
+		{
 			atb_merge_others($dstid, $srcid);
+		}
 
 		// Drafts
 		if ($step == 6)
+		{
 			atb_merge_drafts($dstid, $srcid);
+		}
 
 		// Likes
 		if ($step == 7)
+		{
 			atb_merge_likes($dstid, $srcid);
+		}
 
 		// Mentions
 		if ($step == 8)
+		{
 			atb_merge_mentions($dstid, $srcid);
+		}
 
 		// Custom Fields
 		if ($step == 9)
+		{
 			atb_merge_custom_fields($dstid, $srcid);
+		}
 
 		// Done with standard changes, now on to the addons
 		if ($step > 9 && !empty($addons_installed))
@@ -795,7 +890,7 @@ class Toolbox_Controller extends Action_Controller
 		// Continue?
 		if ($step <= $steps)
 		{
-			// what sub step did we just complete?
+			// What sub step did we just complete?
 			$context['substep_continue_percent'] = 100;
 			$context['substep_title'] = isset($txt['toolbox_merge_' . $step])
 				? $txt['toolbox_merge_' . $step]
@@ -810,27 +905,35 @@ class Toolbox_Controller extends Action_Controller
 
 			// Really would like to keep running
 			if (function_exists('apache_reset_timeout'))
+			{
 				apache_reset_timeout();
+			}
 
 			return;
 		}
 
 		// All done, now we munge the user data together in a Frankenstein sort of way :P
 		if (!empty($_SESSION['adjustuser']))
+		{
 			$this->_munge_member_data($dstid, $srcid);
+		}
 
 		// Say bu-bye to the old id?
 		if (!empty($_SESSION['deluser']))
 		{
-			require_once($sourcedir . '/Subs-Members.php');
+			require_once(SUBSDIR . '/Members.subs.php');
 			deleteMembers($srcid);
 		}
 
 		// Recount cause we just changed things up
 		if (!empty($_SESSION['deluser']))
+		{
 			$this->_RecountMemberPosts($dstid);
+		}
 		else
+		{
 			$this->_RecountMemberPosts(array($dstid, $srcid));
+		}
 
 		// Clean up and move on
 		unset($_SESSION['dstid'], $_SESSION['srcid'], $_SESSION['addons_installed'], $_SESSION['steps'], $_SESSION['deluser'], $_SESSION['adjustuser']);
@@ -850,12 +953,14 @@ class Toolbox_Controller extends Action_Controller
 		$addons_installed = array();
 
 		// Get all the tables related to this elkarte install
-		$real_prefix = preg_match('~^(`?)(.+?)\\1\\.(.*?)$~', $db_prefix, $match) === 1 ? $match[3] : $db_prefix;
+		$real_prefix = preg_match('~^(`?)(.+?)\\1\\.(.*?)$~', $db_prefix, $match) === 1
+			? $match[3]
+			: $db_prefix;
 		$elk_tables = $db->db_list_tables(false, $real_prefix . '%');
 
 		// Well that was easy, now do the mod tables exist?
 		$checkfor_addons = array(
-			'aeva' => array($real_prefix . 'aeva_media', $real_prefix . 'aeva_comments', $real_prefix . 'aeva_albums'),
+			'aeva' => array($real_prefix . 'aeva_media', $real_prefix . 'aeva_log_media', $real_prefix . 'aeva_albums'),
 			'bookmarks' => array($real_prefix . 'bookmarks'),
 		);
 
@@ -863,7 +968,9 @@ class Toolbox_Controller extends Action_Controller
 		foreach ($checkfor_addons as $addon_name => $addon_dna)
 		{
 			if (count(array_intersect($elk_tables, $addon_dna)) == count($addon_dna))
+			{
 				$addons_installed[] = $addon_name;
+			}
 		}
 
 		return $addons_installed;
@@ -887,25 +994,37 @@ class Toolbox_Controller extends Action_Controller
 		if (!empty($user_profile[$srcid]['buddy_list']))
 		{
 			if (!empty($user_profile[$dstid]['buddy_list']))
+			{
 				$new_data['buddy_list'] = implode(',', array_unique(array_merge(explode($user_profile[$dstid]['buddy_list'], ','), explode($user_profile[$srcid]['buddy_list'], ','))));
+			}
 			else
+			{
 				$new_data['buddy_list'] = $user_profile[$srcid]['buddy_list'];
+			}
 		}
 
 		if (!empty($user_profile[$srcid]['pm_ignore_list']))
 		{
 			if (!empty($user_profile[$dstid]['pm_ignore_list']))
+			{
 				$new_data['pm_ignore_list'] = implode(',', array_unique(array_merge(explode($user_profile[$dstid]['pm_ignore_list'], ','), explode($user_profile[$srcid]['pm_ignore_list'], ','))));
+			}
 			else
+			{
 				$new_data['pm_ignore_list'] = $user_profile[$srcid]['pm_ignore_list'];
+			}
 		}
 
 		if (!empty($user_profile[$srcid]['ignore_boards']))
 		{
 			if (!empty($user_profile[$dstid]['ignore_boards']))
+			{
 				$new_data['ignore_boards'] = implode(',', array_unique(array_merge(explode($user_profile[$dstid]['ignore_boards'], ','), explode($user_profile[$srcid]['ignore_boards'], ','))));
+			}
 			else
+			{
 				$new_data['ignore_boards'] = $user_profile[$srcid]['ignore_boards'];
+			}
 		}
 
 		// Combine values together in other cases
@@ -918,28 +1037,64 @@ class Toolbox_Controller extends Action_Controller
 
 		// Or just the use old (src) data if new (dst) data does not exist,
 		$new_data['date_registered'] = min($user_profile[$dstid]['date_registered'], $user_profile[$srcid]['date_registered']);
-		$new_data['personal_text'] = empty($user_profile[$dstid]['personal_text']) ? $user_profile[$srcid]['personal_text'] : $user_profile[$dstid]['personal_text'];
-		$new_data['gender'] = empty($user_profile[$dstid]['gender']) ? $user_profile[$srcid]['gender'] : $user_profile[$dstid]['gender'];
-		$new_data['birthdate'] = ($user_profile[$dstid]['birthdate'] == '0001-01-01') ? $user_profile[$srcid]['birthdate'] : $user_profile[$dstid]['birthdate'];
-		$new_data['website_title'] = empty($user_profile[$dstid]['website_title']) ? $user_profile[$srcid]['website_title'] : $user_profile[$dstid]['website_title'];
-		$new_data['website_url'] = empty($user_profile[$dstid]['website_url']) ? $user_profile[$srcid]['website_url'] : $user_profile[$dstid]['website_url'];
-		$new_data['location'] = empty($user_profile[$dstid]['location']) ? $user_profile[$srcid]['location'] : $user_profile[$dstid]['location'];
-		$new_data['usertitle'] = empty($user_profile[$dstid]['usertitle']) ? $user_profile[$srcid]['usertitle'] : $user_profile[$dstid]['usertitle'];
-		$new_data['hide_email'] = empty($user_profile[$dstid]['hide_email']) ? $user_profile[$srcid]['hide_email'] : $user_profile[$dstid]['hide_email'];
-		$new_data['show_online'] = empty($user_profile[$dstid]['show_online']) ? $user_profile[$srcid]['show_online'] : $user_profile[$dstid]['show_online'];
-		$new_data['avatar'] = empty($user_profile[$dstid]['avatar']) ? $user_profile[$srcid]['avatar'] : $user_profile[$dstid]['avatar'];
-		$new_data['signature'] = empty($user_profile[$dstid]['signature']) ? $user_profile[$srcid]['signature'] : $user_profile[$dstid]['signature'];
-		$new_data['pm_email_notify'] = empty($user_profile[$dstid]['pm_email_notify']) ? $user_profile[$srcid]['pm_email_notify'] : $user_profile[$dstid]['pm_email_notify'];
-		$new_data['notify_announcements'] = empty($user_profile[$dstid]['notify_announcements']) ? $user_profile[$srcid]['notify_announcements'] : $user_profile[$dstid]['notify_announcements'];
-		$new_data['notify_regularity'] = empty($user_profile[$dstid]['notify_regularity']) ? $user_profile[$srcid]['notify_regularity'] : $user_profile[$dstid]['notify_regularity'];
-		$new_data['notify_send_body'] = empty($user_profile[$dstid]['notify_send_body']) ? $user_profile[$srcid]['notify_send_body'] : $user_profile[$dstid]['notify_send_body'];
-		$new_data['notify_types'] = empty($user_profile[$dstid]['notify_types']) ? $user_profile[$srcid]['notify_types'] : $user_profile[$dstid]['notify_types'];
+		$new_data['personal_text'] = empty($user_profile[$dstid]['personal_text'])
+			? $user_profile[$srcid]['personal_text']
+			: $user_profile[$dstid]['personal_text'];
+		$new_data['gender'] = empty($user_profile[$dstid]['gender'])
+			? $user_profile[$srcid]['gender']
+			: $user_profile[$dstid]['gender'];
+		$new_data['birthdate'] = ($user_profile[$dstid]['birthdate'] == '0001-01-01')
+			? $user_profile[$srcid]['birthdate']
+			: $user_profile[$dstid]['birthdate'];
+		$new_data['website_title'] = empty($user_profile[$dstid]['website_title'])
+			? $user_profile[$srcid]['website_title']
+			: $user_profile[$dstid]['website_title'];
+		$new_data['website_url'] = empty($user_profile[$dstid]['website_url'])
+			? $user_profile[$srcid]['website_url']
+			: $user_profile[$dstid]['website_url'];
+		$new_data['location'] = empty($user_profile[$dstid]['location'])
+			? $user_profile[$srcid]['location']
+			: $user_profile[$dstid]['location'];
+		$new_data['usertitle'] = empty($user_profile[$dstid]['usertitle'])
+			? $user_profile[$srcid]['usertitle']
+			: $user_profile[$dstid]['usertitle'];
+		$new_data['hide_email'] = empty($user_profile[$dstid]['hide_email'])
+			? $user_profile[$srcid]['hide_email']
+			: $user_profile[$dstid]['hide_email'];
+		$new_data['show_online'] = empty($user_profile[$dstid]['show_online'])
+			? $user_profile[$srcid]['show_online']
+			: $user_profile[$dstid]['show_online'];
+		$new_data['avatar'] = empty($user_profile[$dstid]['avatar'])
+			? $user_profile[$srcid]['avatar']
+			: $user_profile[$dstid]['avatar'];
+		$new_data['signature'] = empty($user_profile[$dstid]['signature'])
+			? $user_profile[$srcid]['signature']
+			: $user_profile[$dstid]['signature'];
+		$new_data['pm_email_notify'] = empty($user_profile[$dstid]['pm_email_notify'])
+			? $user_profile[$srcid]['pm_email_notify']
+			: $user_profile[$dstid]['pm_email_notify'];
+		$new_data['notify_announcements'] = empty($user_profile[$dstid]['notify_announcements'])
+			? $user_profile[$srcid]['notify_announcements']
+			: $user_profile[$dstid]['notify_announcements'];
+		$new_data['notify_regularity'] = empty($user_profile[$dstid]['notify_regularity'])
+			? $user_profile[$srcid]['notify_regularity']
+			: $user_profile[$dstid]['notify_regularity'];
+		$new_data['notify_send_body'] = empty($user_profile[$dstid]['notify_send_body'])
+			? $user_profile[$srcid]['notify_send_body']
+			: $user_profile[$dstid]['notify_send_body'];
+		$new_data['notify_types'] = empty($user_profile[$dstid]['notify_types'])
+			? $user_profile[$srcid]['notify_types']
+			: $user_profile[$dstid]['notify_types'];
 
 		// Some addon items as well
 		if (isset($user_profile[$srcid]['latitude']) && !isset($user_profile[$dstid]['latitude']))
+		{
 			$new_data['latitude'] = (float) $user_profile[$srcid]['latitude'];
+		}
 		if (isset($user_profile[$srcid]['longitude']) && !isset($user_profile[$dstid]['longitude']))
+		{
 			$new_data['latitude'] = (float) $user_profile[$srcid]['longitude'];
+		}
 
 		// Update the new ID with the combined / transferred user data
 		updateMemberData($dstid, $new_data);
@@ -961,11 +1116,15 @@ class Toolbox_Controller extends Action_Controller
 
 		// Can't do it if there's no info
 		if (empty($members))
+		{
 			return;
+		}
 
 		// It must be an array
 		if (!is_array($members))
+		{
 			$members = array($members);
+		}
 
 		// Lets get their post counts
 		$request = $db->query('', '
@@ -974,8 +1133,10 @@ class Toolbox_Controller extends Action_Controller
 			FROM {db_prefix}messages AS m
 				LEFT JOIN {db_prefix}boards AS b ON b.id_board = m.id_board
 			WHERE m.id_member IN ({array_int:members})
-				AND b.count_posts = {int:zero}' . (!empty($modSettings['recycle_enable']) ? ('
-				AND b.id_board != ' . $modSettings['recycle_board']) : ''),
+				AND b.count_posts = {int:zero}' . (!empty($modSettings['recycle_enable'])
+				? ('
+				AND b.id_board != ' . $modSettings['recycle_board'])
+				: ''),
 			array(
 				'zero' => 0,
 				'members' => $members,
@@ -985,6 +1146,7 @@ class Toolbox_Controller extends Action_Controller
 		while ($row = $db->fetch_assoc($request))
 		{
 			if (isset($row['id_member']))
+			{
 				$db->query('', '
 					UPDATE {db_prefix}members
 					SET posts = {int:posts}
@@ -994,6 +1156,7 @@ class Toolbox_Controller extends Action_Controller
 						'posts' => $row['posts'],
 					)
 				);
+			}
 		}
 		$db->free_result($request);
 	}
@@ -1059,69 +1222,6 @@ class Toolbox_Controller extends Action_Controller
 			)
 		);
 
-		// And now update album permissions by removing srcid ID from allowed members, allowed_write, denied_write, denied_members
-		$db->query('', '
-			UPDATE {db_prefix}aeva_albums
-			SET allowed_members = TRIM(BOTH \',\' FROM REPLACE(CONCAT(\',\', allowed_members, \',\'), \',{int:srcid},\', \',{int:dstid},\'))
-			WHERE FIND_IN_SET({int:srcid}, allowed_members)',
-			array(
-				'dstid' => $dstid,
-				'srcid' => $srcid
-			)
-		);
-
-		$db->query('', '
-			UPDATE {db_prefix}aeva_albums
-			SET allowed_write = TRIM(BOTH \',\' FROM REPLACE(CONCAT(\',\', allowed_write, \',\'), \',{int:srcid},\', \',{int:dstid},\'))
-			WHERE FIND_IN_SET({int:srcid}, allowed_write)',
-			array(
-				'dstid' => $dstid,
-				'srcid' => $srcid
-			)
-		);
-
-		$db->query('', '
-			UPDATE {db_prefix}aeva_albums
-			SET denied_write = TRIM(BOTH \',\' FROM REPLACE(CONCAT(\',\', denied_write, \',\'), \',{int:srcid},\', \',{int:dstid},\'))
-			WHERE FIND_IN_SET({int:srcid}, denied_write)',
-			array(
-				'dstid' => $dstid,
-				'srcid' => $srcid
-			)
-		);
-
-		$db->query('', '
-			UPDATE {db_prefix}aeva_albums
-			SET denied_members = TRIM(BOTH \',\' FROM REPLACE(CONCAT(\',\', denied_members, \',\'), \',{int:srcid},\', \',{int:dstid},\'))
-			WHERE FIND_IN_SET({int:srcid}, denied_members)',
-			array(
-				'dstid' => $dstid,
-				'srcid' => $srcid
-			)
-		);
-
-		// who made and who edited the comments
-		$db->query('', '
-			UPDATE {db_prefix}aeva_comments
-			SET id_member = {int:dstid}
-			WHERE id_member = {int:srcid}',
-			array(
-				'dstid' => $dstid,
-				'srcid' => $srcid
-			)
-		);
-
-		$db->query('', '
-			UPDATE {db_prefix}aeva_comments
-			SET last_edited_by = {int:dstid}, last_edited_name = {string:dstname}
-			WHERE last_edited_by = {int:srcid}',
-			array(
-				'dstid' => $dstid,
-				'srcid' => $srcid,
-				'dstname' => $dstname
-			)
-		);
-
 		// And now the actual album items and who edited them as well
 		$db->query('', '
 			UPDATE {db_prefix}aeva_media
@@ -1142,6 +1242,16 @@ class Toolbox_Controller extends Action_Controller
 				'dstid' => $dstid,
 				'srcid' => $srcid,
 				'dstname' => $dstname
+			)
+		);
+
+		$db->query('', '
+			UPDATE {db_prefix}aeva_log_media
+			SET id_member = {int:dstid}
+			WHERE id_member = {int:srcid}',
+			array(
+				'dstid' => $dstid,
+				'srcid' => $srcid,
 			)
 		);
 	}
