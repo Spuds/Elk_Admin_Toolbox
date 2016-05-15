@@ -42,7 +42,7 @@ class Toolbox_Controller extends Action_Controller
 		loadLanguage('AdminToolbox');
 		loadTemplate('AdminToolbox');
 
-		$this->db_title = $db->db_title() === 'MySQL';
+		$this->db_title = DB_TYPE === 'MySQL';
 	}
 
 	/**
@@ -221,7 +221,7 @@ class Toolbox_Controller extends Action_Controller
 		global $txt, $context;
 
 		// Not getting hacky with it are ya?
-		if ($this->db_title !== 'MySQL')
+		if (DB_TYPE !== 'MySQL')
 		{
 			redirectexit('action=admin;area=toolbox;');
 		}
@@ -658,6 +658,7 @@ class Toolbox_Controller extends Action_Controller
 		global $user_info, $user_profile, $context, $txt;
 
 		checkSession();
+		unset($_SESSION['dstid'], $_SESSION['srcid'], $_SESSION['addons_installed'], $_SESSION['steps'], $_SESSION['deluser'], $_SESSION['adjustuser']);
 
 		// Sanitize as needed, the _id post vars are set by the autosuggest script, if found move them to normal post
 		$autosuggest_merge_to = empty($_POST['merge_to_id']) ? 0 : (int) $_POST['merge_to_id'];
@@ -775,7 +776,7 @@ class Toolbox_Controller extends Action_Controller
 	 */
 	public function action_mergemembers()
 	{
-		global $txt, $context, $sourcedir;
+		global $txt, $context;
 
 		checkSession('request');
 
@@ -794,9 +795,6 @@ class Toolbox_Controller extends Action_Controller
 		$step = !isset($_GET['step'])
 			? 0
 			: (int) $_GET['step'];
-
-		// Ask for some extra time, never hurts ;)
-		@set_time_limit(600);
 
 		// Only need to do this at the start of our run
 		if (!isset($_SESSION['dstid'], $_SESSION['srcid']))
@@ -904,6 +902,7 @@ class Toolbox_Controller extends Action_Controller
 			$context['continue_percent'] = round(100 * ($step / ($steps + 1)));
 
 			// Really would like to keep running
+			@set_time_limit(60);
 			if (function_exists('apache_reset_timeout'))
 			{
 				apache_reset_timeout();
