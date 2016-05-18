@@ -26,11 +26,10 @@ function iaa_admintoolbox(&$admin_areas)
 	$admin_areas['maintenance']['areas']['toolbox'] = array(
 		'controller' => 'Toolbox_Controller',
 		'function' => 'action_index',
-		'class' => 'admin_img_corefeatures',
 		'permission' => array('admin_forum'),
 		'label' => $txt['toolbox_title'],
 		'file' => 'AdminToolbox.controller.php',
-		'icon' => 'toolbox.gif',
+		'icon' => 'toolbox.png',
 	);
 }
 
